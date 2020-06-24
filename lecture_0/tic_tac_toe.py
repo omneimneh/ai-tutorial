@@ -95,14 +95,12 @@ class TicTacAgent:
         self.turn = turn
 
     def play(self):
-        if(self.game.is_empty()):
-            return (0, 0, 0)
         if self.turn is TicTacPlayer.X:
             return self.max_min(self.game)
         else:
             return self.min_max(self.game)
 
-    def min_max(self, game: TicTacGame):
+    def min_max(self, game: TicTacGame, alpha_beta_min: int = -100):
         if game.has_ended():
             winner = game.winner()
             if winner is None:
@@ -114,13 +112,16 @@ class TicTacAgent:
             for j in range(len(game.board)):
                 copied_game = TicTacGame.copy(game)
                 if copied_game.play(i, j):
-                    computed = self.max_min(copied_game)[0]
+                    computed = self.max_min(copied_game, res)[0]
+                    if computed <= alpha_beta_min:
+                        # alpha beta pruning
+                        return (computed, i, j)
                     if computed < res:
                         res, resI, resJ = computed, i, j
 
         return (res, resI, resJ)
 
-    def max_min(self, game: TicTacGame):
+    def max_min(self, game: TicTacGame, alpha_beta_max: int = 100):
         if game.has_ended():
             winner = game.winner()
             if winner is None:
@@ -132,7 +133,10 @@ class TicTacAgent:
             for j in range(len(game.board)):
                 copied_game = TicTacGame.copy(game)
                 if copied_game.play(i, j):
-                    computed = self.min_max(copied_game)[0]
+                    computed = self.min_max(copied_game, res)[0]
+                    if computed >= alpha_beta_max:
+                        # alpha beta pruning
+                        return (computed, i, j)
                     if computed > res:
                         res, resI, resJ = computed, i, j
 
